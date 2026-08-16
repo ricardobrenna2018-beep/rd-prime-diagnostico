@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>RD PRIME · O Diagnóstico da Verdade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#0D0D0D;
+  --gold:#D4AF37;
+  --gold-soft:#e8cd7a;
+  --white:#FFFFFF;
+  --graphite:#2A2A2A;
+  --lightgray:#EAEAEA;
+  --paper:#FAFAF8;
+  --red:#B23A2E;
+  --green:#3f7a4e;
+}
+*{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html,body{ height:100%; }
+body{
+  font-family:'Poppins', -apple-system, sans-serif;
+  background:var(--black);
+  color:var(--black);
+  overflow:hidden;
+}
+::selection{ background:var(--gold); color:var(--black); }
+
+#app{ position:relative; width:100%; height:100vh; height:100dvh; overflow:hidden; }
+
+.screen{
+  position:absolute; inset:0;
+  display:none;
+  flex-direction:column;
+  overflow-y:auto;
+  background:var(--paper);
+  -webkit-overflow-scrolling:touch;
+}
+.screen.active{ display:flex; }
+.screen.dark{ background:var(--black); color:var(--white); }
+
+.scr-inner{ max-width:560px; margin:0 auto; width:100%; padding:0 24px; flex:1; display:flex; flex-direction:column; }
+
+/* topbar */
+.topbar{
+  display:flex; align-items:center; gap:12px; padding:16px 24px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  flex-shrink:0;
+}
+.topbar.on-light{ border-bottom:1px solid #EDEDED; }
+.back-btn{
+  background:none; border:none; cursor:pointer; color:inherit; opacity:0.7;
+  font-size:18px; padding:4px 8px 4px 0; line-height:1;
+}
+.back-btn:hover{ opacity:1; }
+.topbar .ttrack{ flex:1; height:3px; background:rgba(255,255,255,0.12); border-radius:2px; overflow:hidden; }
+.topbar.on-light .ttrack{ background:var(--lightgray); }
+.topbar .tfill{ height:100%; width:0%; background:var(--gold); transition:width .4s ease; }
+.topbar .tlabel{ font-size:10px; letter-spacing:1px; color:inherit; opacity:0.55; font-weight:600; white-space:nowrap; }
+
+/* ---------- LANDING ---------- */
+.landing{ justify-content:center; align-items:flex-start; padding-top:0; position:relative; overflow:hidden; }
+.landing::before{
+  content:""; position:absolute; right:-140px; top:-160px;
+  width:440px; height:440px; border-radius:50%;
+  background:radial-gradient(circle, rgba(212,175,55,0.16) 0%, rgba(212,175,55,0) 70%);
+  pointer-events:none;
+}
+.brandline{ font-size:10.5px; letter-spacing:4px; font-weight:600; color:var(--gold); text-transform:uppercase; }
+.kicker{ margin-top:30px; font-size:11px; letter-spacing:5px; font-weight:700; color:var(--gold); text-transform:uppercase; }
+h1.title{ font-size:clamp(30px,8vw,42px); font-weight:700; line-height:1.1; margin-top:14px; letter-spacing:-0.2px; color:var(--white); }
+.rule-mini{ width:34px; height:2px; background:var(--gold); margin:22px 0 18px 0; }
+.landing .sub{ font-size:14px; font-weight:300; color:#c9c9c9; max-width:440px; line-height:1.65; position:relative; }
+.landing .bullets{ margin-top:26px; display:flex; flex-direction:column; gap:10px; position:relative; }
+.landing .bullets .b{ display:flex; gap:10px; align-items:flex-start; font-size:12.5px; color:#bdbdbd; font-weight:300; }
+.landing .bullets .b .dot{ color:var(--gold); font-weight:700; margin-top:1px; }
+.spacer{ flex:1; min-height:24px; }
+
+/* buttons */
+.btn-primary{
+  width:100%; background:var(--gold); color:var(--black); border:none; cursor:pointer;
+  font-family:'Poppins',sans-serif; font-weight:700; font-size:14.5px; letter-spacing:0.4px;
+  padding:17px 20px; border-radius:3px; transition:all .2s ease;
+}
+.btn-primary:hover:not(:disabled){ background:var(--gold-soft); transform:translateY(-1px); }
+.btn-primary:disabled{ background:#3a3a3a; color:#7a7a7a; cursor:not-allowed; }
+.btn-secondary{
+  width:100%; background:transparent; border:1.3px solid #3a3a3a; color:#c4c4c4;
+  font-family:'Poppins',sans-serif; font-size:12.5px; letter-spacing:0.5px; padding:13px 20px; cursor:pointer; border-radius:3px;
+  transition:all .2s ease; margin-top:10px;
+}
+.btn-secondary:hover{ border-color:var(--gold); color:var(--gold); }
+.btn-zone{ padding:22px 0 30px 0; flex-shrink:0; }
+.btn-note{ margin-top:12px; font-size:10.5px; color:#7a7a7a; text-align:center; letter-spacing:0.3px; }
+
+/* ---------- LEAD FORM ---------- */
+.lead-body{ padding-top:36px; }
+.eyebrow{ font-size:10px; letter-spacing:3px; font-weight:700; color:var(--gold); text-transform:uppercase; }
+h2.section-title{ font-size:23px; font-weight:700; margin-top:8px; }
+.lead-body .lead-sub{ font-size:12.5px; color:#4a4a4a; margin-top:8px; line-height:1.6; font-weight:300; }
+.field{ margin-top:22px; }
+.field label{ font-size:10.5px; letter-spacing:1px; font-weight:700; color:var(--graphite); text-transform:uppercase; }
+.field input{
+  width:100%; margin-top:8px; padding:13px 14px; font-size:14.5px; font-family:'Poppins',sans-serif;
+  border:1.3px solid #DADADA; border-radius:3px; background:var(--white); color:var(--black);
+  outline:none; transition:border-color .15s ease;
+}
+.field input:focus{ border-color:var(--gold); }
+.field .errmsg{ font-size:10.5px; color:var(--red); margin-top:5px; display:none; }
+.privacy-note{ margin-top:18px; font-size:10px; color:#9a9a9a; line-height:1.6; }
+
+/* ---------- QUESTION SCREENS ---------- */
+.q-body{ padding-top:28px; }
+.area-head{ display:flex; align-items:baseline; gap:12px; }
+.area-head .idx{ font-size:26px; font-weight:700; color:var(--gold); line-height:1; }
+.area-head .names .eyebrow2{ font-size:9px; letter-spacing:2px; color:#9a9a9a; font-weight:700; text-transform:uppercase; }
+.area-head h3{ font-size:17px; font-weight:700; color:var(--black); margin-top:2px; }
+.area-intro{ font-size:11.5px; color:#5a5a5a; line-height:1.65; margin-top:9px; font-weight:300; }
+
+.scale-legend{ margin-top:18px; display:grid; grid-template-columns:repeat(5,1fr); gap:5px; }
+.scale-legend .sc{
+  background:var(--lightgray); text-align:center; padding:7px 2px; font-size:8.5px; font-weight:700;
+  color:var(--graphite); border-bottom:2px solid var(--gold); letter-spacing:0.2px; line-height:1.4;
+}
+
+.qlist{ margin-top:16px; display:flex; flex-direction:column; gap:16px; padding-bottom:8px; }
+.qcard{ padding-bottom:14px; border-bottom:1px solid #EFEFEF; }
+.qtext{ font-size:12.5px; color:var(--graphite); line-height:1.5; font-weight:500; margin-bottom:10px; }
+.qtext .qn{ color:var(--gold); font-weight:700; margin-right:5px; }
+.pillrow{ display:flex; gap:5px; }
+.pill{
+  flex:1; text-align:center; padding:9px 2px; font-size:9.5px; font-weight:600;
+  border:1.3px solid #DADADA; border-radius:3px; cursor:pointer; color:#8a8a8a;
+  transition:all .12s ease; user-select:none; background:var(--white);
+}
+.pill:active{ transform:scale(0.96); }
+.pill.selected{ background:var(--black); border-color:var(--black); color:var(--gold); }
+.pill .pv{ display:block; font-size:12.5px; font-weight:800; margin-bottom:1px; }
+
+/* ---------- LOADING ---------- */
+.loading{ justify-content:center; align-items:center; text-align:center; }
+.loading .lspin{
+  width:44px; height:44px; border:2.5px solid #2A2A2A; border-top-color:var(--gold); border-radius:50%;
+  animation:spin 0.9s linear infinite; margin:0 auto 20px auto;
+}
+@keyframes spin{ to{ transform:rotate(360deg); } }
+.loading h3{ color:var(--white); font-size:15px; font-weight:600; }
+.loading p{ color:#8a8a8a; font-size:11.5px; margin-top:8px; }
+
+/* ---------- RESULTS ---------- */
+.res-hero{ text-align:center; padding-top:34px; position:relative; overflow:hidden; flex-shrink:0; }
+.res-hero::before{
+  content:""; position:absolute; left:50%; top:-100px; transform:translateX(-50%);
+  width:420px; height:420px; border-radius:50%;
+  background:radial-gradient(circle, rgba(212,175,55,0.16) 0%, rgba(212,175,55,0) 70%);
+  pointer-events:none;
+}
+.res-eyebrow{ font-size:10px; letter-spacing:3.5px; color:var(--gold); font-weight:700; text-transform:uppercase; position:relative;}
+.gauge-wrap{ position:relative; margin:20px auto 0 auto; width:172px; height:172px; }
+.gauge-num{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.gauge-num .score{ font-size:42px; font-weight:800; color:var(--white); line-height:1; }
+.gauge-num .max{ font-size:10px; color:#9a9a9a; margin-top:2px; letter-spacing:1px; }
+.res-level{ margin-top:14px; position:relative; }
+.res-level .lvname{ font-size:20px; font-weight:800; color:var(--gold); letter-spacing:0.2px; }
+.res-level .lvdesc{ font-size:11.5px; color:#b8b8b8; margin-top:8px; line-height:1.6; font-weight:300; }
+
+.res-scroll{ flex:1; overflow-y:auto; background:var(--white); color:var(--black); }
+.res-section{ padding:28px 24px; border-bottom:1px solid #EFEFEF; max-width:560px; margin:0 auto; }
+.barlist{ margin-top:16px; display:flex; flex-direction:column; gap:12px; }
+.barrow{ display:flex; align-items:center; gap:10px; }
+.barrow .bname{ width:120px; font-size:10.5px; font-weight:600; color:var(--graphite); flex-shrink:0; line-height:1.3; }
+.barrow .btrack{ flex:1; height:8px; background:var(--lightgray); border-radius:2px; overflow:hidden; }
+.barrow .bfill{ height:100%; background:var(--gold); border-radius:2px; transition:width 1s ease; width:0%; }
+.barrow.weak .bfill{ background:var(--red); }
+.barrow .bval{ width:36px; text-align:right; font-size:10.5px; font-weight:700; color:var(--black); flex-shrink:0; }
+
+.spotlight{ display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
+.spot-card{ flex:1; min-width:150px; padding:15px 16px; }
+.spot-card.best{ background:var(--lightgray); }
+.spot-card.worst{ background:#FBF6E9; border-left:3px solid var(--gold); }
+.spot-card .slbl{ font-size:8.5px; letter-spacing:1.5px; font-weight:700; text-transform:uppercase; color:#8a8a8a; }
+.spot-card.worst .slbl{ color:#8a6d1f; }
+.spot-card .sname{ font-size:14px; font-weight:700; margin-top:5px; color:var(--black); }
+.spot-card .sscore{ font-size:10.5px; color:#666; margin-top:3px; }
+
+.priority-block{ margin-top:20px; background:var(--black); color:var(--white); padding:18px 20px; }
+.priority-block .plbl{ font-size:8.5px; letter-spacing:1.5px; color:var(--gold); text-transform:uppercase; font-weight:700; }
+.priority-block h4{ font-size:14px; font-weight:700; margin-top:7px; }
+.priority-block p{ font-size:11.5px; color:#c4c4c4; margin-top:7px; line-height:1.6; font-weight:300; }
+.priority-block .action-line{ margin-top:12px; padding-top:12px; border-top:1px solid #2A2A2A; font-size:11.5px; color:var(--white); font-weight:500; line-height:1.6; }
+.priority-block .action-line b{ color:var(--gold); }
+
+.wa-block{ background:#0D0D0D; padding:32px 24px 40px 24px; text-align:center; }
+.wa-block .weyebrow{ font-size:9.5px; letter-spacing:2.5px; color:var(--gold); font-weight:700; text-transform:uppercase; }
+.wa-block h3{ color:var(--white); font-size:18px; font-weight:700; margin-top:10px; line-height:1.4; }
+.wa-block p{ color:#a8a8a8; font-size:11.5px; margin-top:10px; line-height:1.6; font-weight:300; max-width:440px; margin-left:auto; margin-right:auto; }
+.btn-whats{
+  margin-top:20px; display:inline-flex; align-items:center; gap:10px; text-decoration:none;
+  background:#25D366; color:#0D0D0D; font-weight:700; font-size:13.5px; padding:15px 26px; border-radius:3px;
+  transition:all .2s ease; font-family:'Poppins',sans-serif;
+}
+.btn-whats:hover{ background:#2fe578; transform:translateY(-1px); }
+.btn-whats svg{ width:18px; height:18px; flex-shrink:0; }
+.wa-fallback{ margin-top:12px; font-size:10px; color:#6a6a6a; }
+
+.foot{ padding:16px 24px; text-align:center; font-size:9.5px; letter-spacing:2px; color:#9a9a9a; text-transform:uppercase; font-weight:600; }
+.foot.on-dark{ color:#6a6a6a; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- SCREEN 0: LANDING -->
+  <div class="screen dark landing active" data-screen="landing">
+    <div class="scr-inner">
+      <div style="padding-top:52px;">
+        <div class="brandline">RD FACILITIES</div>
+        <div class="kicker">RD PRIME · EDIÇÃO 001</div>
+        <h1 class="title">O Diagnóstico<br>da Verdade</h1>
+        <div class="rule-mini"></div>
+        <p class="sub">7 áreas que determinam como sua empresa é percebida, escolhida e lembrada. Responda com honestidade e receba, na hora, o diagnóstico completo do seu negócio.</p>
+        <div class="bullets">
+          <div class="b"><span class="dot">—</span><span>35 perguntas, 7 áreas do seu negócio</span></div>
+          <div class="b"><span class="dot">—</span><span>Leva cerca de 4 minutos</span></div>
+          <div class="b"><span class="dot">—</span><span>Resultado + plano de ação na hora, sem espera</span></div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="btn-zone">
+        <button class="btn-primary" id="btnStart">COMEÇAR DIAGNÓSTICO</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 1: LEAD FORM -->
+  <div class="screen" data-screen="lead">
+    <div class="topbar on-light">
+      <button class="back-btn" data-back="landing">‹</button>
+      <div class="ttrack"><div class="tfill" style="width:5%"></div></div>
+      <div class="tlabel" style="color:#999;">SEUS DADOS</div>
+    </div>
+    <div class="scr-inner">
+      <div class="lead-body">
+        <div class="eyebrow">Antes de começar</div>
+        <h2 class="section-title">Para onde enviamos seu resultado?</h2>
+        <p class="lead-sub">Seus dados são usados apenas para te enviar o diagnóstico e, se fizer sentido, continuar a conversa pelo WhatsApp.</p>
+        <div class="field">
+          <label>Nome</label>
+          <input type="text" id="leadName" placeholder="Seu nome completo" autocomplete="name">
+          <div class="errmsg" id="err-leadName">Digite seu nome.</div>
+        </div>
+        <div class="field">
+          <label>E-mail</label>
+          <input type="email" id="leadEmail" placeholder="seu@email.com" autocomplete="email">
+          <div class="errmsg" id="err-leadEmail">Digite um e-mail válido.</div>
+        </div>
+        <div class="field">
+          <label>WhatsApp</label>
+          <input type="tel" id="leadPhone" placeholder="(00) 00000-0000" autocomplete="tel">
+          <div class="errmsg" id="err-leadPhone">Digite um telefone válido.</div>
+        </div>
+        <div class="privacy-note">Ao continuar, você concorda em receber contato da RD Facilities sobre este diagnóstico.</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="btn-zone">
+        <button class="btn-primary" id="btnLeadNext">CONTINUAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2..8: AREA QUESTION SCREENS (injected by JS) -->
+  <div id="areaScreens"></div>
+
+  <!-- SCREEN: LOADING -->
+  <div class="screen dark loading" data-screen="loading">
+    <div>
+      <div class="lspin"></div>
+      <h3>Calculando seu diagnóstico</h3>
+      <p>Cruzando suas respostas nas 7 áreas...</p>
+    </div>
+  </div>
+
+  <!-- SCREEN: RESULTS -->
+  <div class="screen" data-screen="results" style="overflow-y:hidden;">
+    <div class="res-hero dark" style="background:#0D0D0D;">
+      <div class="res-eyebrow">RESULTADO DO DIAGNÓSTICO</div>
+      <div class="gauge-wrap">
+        <svg width="172" height="172" viewBox="0 0 172 172">
+          <circle cx="86" cy="86" r="74" fill="none" stroke="#2A2A2A" stroke-width="9"/>
+          <circle id="gaugeCircle" cx="86" cy="86" r="74" fill="none" stroke="#D4AF37" stroke-width="9"
+            stroke-linecap="round" stroke-dasharray="464.96" stroke-dashoffset="464.96"
+            transform="rotate(-90 86 86)" style="transition: stroke-dashoffset 1.2s ease"/>
+        </svg>
+        <div class="gauge-num">
+          <div class="score" id="scoreTotal">0</div>
+          <div class="max">DE 140 PONTOS</div>
+        </div>
+      </div>
+      <div class="res-level">
+        <div class="lvname" id="levelName">—</div>
+        <div class="lvdesc" id="levelDesc">—</div>
+      </div>
+    </div>
+    <div class="res-scroll">
+      <div class="res-section">
+        <div class="eyebrow">Panorama</div>
+        <h2 class="section-title">Suas 7 áreas, lado a lado</h2>
+        <div class="barlist" id="barList"></div>
+      </div>
+      <div class="res-section">
+        <div class="eyebrow">Diagnóstico</div>
+        <h2 class="section-title">Onde focar primeiro</h2>
+        <div class="spotlight">
+          <div class="spot-card best">
+            <div class="slbl">Melhor área</div>
+            <div class="sname" id="bestName">—</div>
+            <div class="sscore" id="bestScore">—</div>
+          </div>
+          <div class="spot-card worst">
+            <div class="slbl">Área mais fraca</div>
+            <div class="sname" id="worstName">—</div>
+            <div class="sscore" id="worstScore">—</div>
+          </div>
+        </div>
+        <div class="priority-block">
+          <div class="plbl">Alerta estratégico</div>
+          <h4 id="worstAlertTitle">—</h4>
+          <p id="worstAlertText">—</p>
+          <div class="action-line"><b>Ação recomendada:</b> <span id="worstActionText">—</span></div>
+        </div>
+      </div>
+      <div class="wa-block" id="waBlock">
+        <div class="weyebrow" id="waEyebrow">PRÓXIMO PASSO</div>
+        <h3 id="waTitle">—</h3>
+        <p id="waText">—</p>
+        <a class="btn-whats" id="waLink" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="#0D0D0D"><path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.3-.5.1-.2 0-.4 0-.5C10 9 9.4 7.6 9.2 7c-.2-.5-.4-.5-.6-.5h-.5c-.2 0-.5.1-.7.3-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2.1 3.2 5 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.1-1.4-.1-.1-.3-.2-.6-.3z"/><path d="M12 2C6.5 2 2 6.5 2 12c0 1.9.5 3.7 1.5 5.3L2 22l4.8-1.5c1.5.9 3.3 1.4 5.2 1.4 5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18.3c-1.7 0-3.4-.5-4.8-1.4l-.3-.2-3.4 1 1-3.3-.2-.3C3.5 14.7 3 13.4 3 12c0-5 4-9 9-9s9 4 9 9-4 9-9 9z"/></svg>
+          <span id="waBtnText">FALAR NO WHATSAPP</span>
+        </a>
+        <div class="wa-fallback">Ao clicar, o WhatsApp abre com seus dados e resultado já preenchidos.</div>
+      </div>
+      <div class="foot on-dark">RD PRIME · RD FACILITIES</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const AREAS = [{"num": "01", "nome": "POSICIONAMENTO", "intro": "Antes de vender mais, o mercado precisa entender exatamente o que sua empresa representa. Um posicionamento confuso obriga o cliente a decidir com base em preço — porque é a única coisa que ele consegue comparar com clareza.", "perguntas": ["Quando alguém pergunta o que sua empresa faz, você responde em uma frase clara, sem enrolação?", "Seus clientes conseguem explicar aos outros por que escolheram você e não o concorrente?", "Você sabe, com precisão, quem é o seu cliente ideal — e recusa quem não se encaixa nesse perfil?", "Sua proposta de valor está visível em todos os pontos de contato (site, redes sociais, atendimento, materiais)?", "Quando um concorrente reduz o preço, sua empresa continua sendo escolhida pelo mesmo motivo de sempre?"], "alerta": "Quando o posicionamento é confuso, o cliente compara apenas preço — porque é a única variável que ele consegue enxergar com clareza.", "acao": "Escreva, em uma única frase, o que sua empresa resolve e para quem. Teste essa frase com 3 clientes atuais e veja se eles concordam.", "interpBaixo": "O mercado não sabe claramente o que diferencia sua empresa. Isso reduz a força de recomendação e aumenta a sensibilidade a preço.", "interpAlto": "Sua empresa tem clareza de posicionamento — o desafio agora é manter essa mensagem consistente em todos os canais."}, {"num": "02", "nome": "MARCA E PERCEPÇÃO", "intro": "A marca é a primeira decisão que o cliente toma antes mesmo de conhecer o produto: confiar ou não confiar. Inconsistência visual e falta de padrão reduzem a percepção de seriedade, mesmo quando o serviço prestado é bom.", "perguntas": ["Sua identidade visual (logo, cores, materiais) transmite o mesmo nível de seriedade em todos os canais?", "Um cliente que nunca ouviu falar da sua empresa, ao ver seus materiais, percebe uma estrutura maior do que ela realmente tem?", "Seus perfis, documentos e ambientes físicos seguem um padrão visual consistente?", "Sua empresa é vista como referência dentro do seu segmento, na sua região?", "A primeira impressão de um novo cliente (site, WhatsApp, loja, escritório) é impecável, sem ressalvas?"], "alerta": "Percepção de valor é formada em segundos, antes de qualquer argumento de venda. Se a primeira impressão é fraca, o discurso comercial precisa compensar um déficit que já começou negativo.", "acao": "Liste os 5 pontos de contato mais usados pelo cliente (Instagram, WhatsApp, loja, site, cartão) e avalie cada um como se fosse a primeira vez que o está vendo.", "interpBaixo": "A marca ainda não transmite o nível de estrutura que o negócio de fato tem. Isso limita o ticket médio e a autoridade percebida.", "interpAlto": "A marca já comunica solidez — o próximo passo é sustentar esse padrão em novos canais e materiais."}, {"num": "03", "nome": "OFERTA", "intro": "Uma oferta confusa gera hesitação. Hesitação gera comparação de preço. E comparação de preço, na ausência de outros critérios, é sempre vencida por quem cobra menos.", "perguntas": ["Sua oferta principal é fácil de entender em menos de 10 segundos?", "O cliente sabe exatamente o benefício que vai receber, e não apenas a característica do produto ou serviço?", "Sua oferta se diferencia claramente das opções concorrentes disponíveis no mercado?", "O valor cobrado é percebido como justo pela maioria dos clientes, sem necessidade de desconto para fechar?", "O cliente consegue decidir rapidamente, sem objeções recorrentes que sempre voltam a aparecer?"], "alerta": "Quando o cliente pede desconto com frequência, raramente o problema é o preço — na maioria dos casos, é a clareza do benefício.", "acao": "Reescreva sua oferta principal em uma frase que comece com o resultado que o cliente recebe, não com a característica do que você vende.", "interpBaixo": "A oferta ainda depende de explicação verbal para ser entendida. Isso gera atrito e alonga o ciclo de decisão.", "interpAlto": "A oferta já é compreendida com facilidade — vale revisar periodicamente para manter a diferenciação frente à concorrência."}, {"num": "04", "nome": "PRESENÇA DIGITAL", "intro": "Antes de decidir, praticamente todo cliente pesquisa a empresa online. Uma presença digital fraca ou desatualizada anula, em segundos, a confiança construída em outros canais.", "perguntas": ["Seu Instagram (ou principal rede) é atualizado com frequência e transmite profissionalismo?", "Sua empresa aparece de forma completa e positiva quando pesquisada no Google (ficha, avaliações, site)?", "Você possui um site ou página que representa adequadamente o nível da sua empresa?", "Você publica conteúdo que educa ou demonstra autoridade, e não apenas promoções?", "Sua empresa possui provas sociais visíveis (depoimentos, avaliações, casos, números)?"], "alerta": "Um cliente que pesquisa e não encontra nada — ou encontra algo desatualizado — interpreta isso como sinal de instabilidade, mesmo que a empresa esteja funcionando normalmente.", "acao": "Pesquise o nome da sua empresa no Google agora, como se fosse um cliente novo, e anote os três primeiros problemas que você percebe.", "interpBaixo": "A presença digital ainda não sustenta a decisão de compra. Parte dos clientes pode estar desistindo antes mesmo do primeiro contato.", "interpAlto": "A presença digital já gera confiança — o foco agora é converter esse reconhecimento em mais contatos qualificados."}, {"num": "05", "nome": "ATENDIMENTO E VENDAS", "intro": "A venda raramente se perde no preço final — ela se perde na velocidade, no diagnóstico e na condução da conversa. Um bom produto com um atendimento fraco converte muito menos do que deveria.", "perguntas": ["O atendimento inicial (WhatsApp, telefone, presencial) acontece com rapidez, sem o cliente esperar demais?", "Antes de apresentar preço, alguém da sua equipe diagnostica a real necessidade do cliente?", "A solução é apresentada de forma personalizada, e não como um discurso decorado igual para todos?", "Sua equipe sabe conduzir objeções sem recorrer imediatamente ao desconto?", "Existe um processo claro de fechamento, ou cada venda depende do jeito de quem está atendendo?"], "alerta": "Quando o fechamento depende exclusivamente da habilidade individual de quem atende, a empresa perde vendas todos os dias em que essa pessoa não está no seu melhor momento.", "acao": "Mapeie as etapas da sua última venda perdida: em qual etapa exata o cliente esfriou? Isso indica onde o processo precisa de reforço.", "interpBaixo": "O processo de vendas ainda depende de improviso. Isso gera resultado inconsistente mês a mês.", "interpAlto": "O processo de vendas já tem estrutura — o próximo passo é documentá-lo para que qualquer pessoa da equipe consiga reproduzi-lo."}, {"num": "06", "nome": "EXPERIÊNCIA DO CLIENTE", "intro": "A venda não termina no fechamento — ela continua na entrega. É nessa fase que a confiança é confirmada ou destruída, e é dela que nascem as indicações espontâneas.", "perguntas": ["O cliente recebe orientações claras sobre o que esperar logo após fechar negócio (onboarding)?", "A comunicação durante a execução ou entrega é proativa, ou o cliente precisa cobrar novidades?", "Os prazos combinados são cumpridos na grande maioria das vezes?", "Existe algum tipo de acompanhamento após a entrega, mesmo que simples?", "Seus clientes voltam a comprar ou indicam espontaneamente novos clientes?"], "alerta": "Um cliente satisfeito que nunca é lembrado dificilmente indica por conta própria. A indicação espontânea é rara — a maioria precisa ser convidada a acontecer.", "acao": "Defina um único ponto de contato pós-entrega (uma mensagem, uma ligação) que passará a acontecer com todo cliente, sem exceção.", "interpBaixo": "A experiência pós-venda ainda é inconsistente. Isso reduz recompra e indicação, mesmo quando o serviço entregue é bom.", "interpAlto": "A experiência do cliente já é um diferencial — vale transformá-la em depoimentos e provas sociais ativas."}, {"num": "07", "nome": "CRESCIMENTO ESTRATÉGICO", "intro": "Sem metas e indicadores, o crescimento vira sorte. Empresas que crescem de forma consistente sabem exatamente quais números observar e quais processos repetir.", "perguntas": ["Sua empresa trabalha com metas claras (financeiras, de clientes, de indicadores), não apenas vender mais?", "Você acompanha indicadores básicos do negócio (faturamento, ticket médio, taxa de conversão, recorrência)?", "Existem processos documentados para as principais rotinas, ou tudo depende da memória de alguém?", "Sua empresa tem uma estratégia ativa de aquisição de clientes, além da indicação espontânea?", "Você tem um plano claro para recuperar clientes que pararam de comprar?"], "alerta": "Empresas que não medem, repetem os mesmos erros sem perceber — porque não há número que aponte onde o problema está.", "acao": "Escolha um único indicador para acompanhar nas próximas 4 semanas (ex: taxa de conversão) e registre-o semanalmente.", "interpBaixo": "O crescimento ainda depende de esforço individual, não de estrutura. Isso limita o tamanho que a empresa pode alcançar.", "interpAlto": "Já existe base estratégica — o próximo passo é formalizar processos para que o crescimento não dependa apenas do fundador."}];
+
+// >>> TROQUE PELO NÚMERO DE WHATSAPP DA RD FACILITIES (com DDI+DDD, só números) <<<
+const WHATSAPP_NUMBER = "5562994822303";
+
+const LEVELS = [
+  {min:0,   max:35,  name:"EMPRESA INVISÍVEL",     desc:"O mercado ainda não enxerga com clareza o valor da empresa. A prioridade é construir posicionamento e presença antes de investir em mais captação.", tier:"inicio"},
+  {min:36,  max:65,  name:"EMPRESA EM CONSTRUÇÃO", desc:"Existem bases, mas ainda inconsistentes. A empresa já é notada, mas perde oportunidades por falhas pontuais recorrentes.", tier:"inicio"},
+  {min:66,  max:95,  name:"EMPRESA COMPETITIVA",   desc:"A empresa já compete de forma consistente no mercado. O próximo salto vem de refinar os pontos mais fracos identificados.", tier:"inicio"},
+  {min:96,  max:120, name:"EMPRESA DE ALTO VALOR", desc:"A percepção de valor já é sólida na maior parte das áreas. O foco passa a ser sustentar o padrão em escala.", tier:"preparado"},
+  {min:121, max:140, name:"EMPRESA DE REFERÊNCIA", desc:"A empresa já é percebida como referência dentro do seu contexto. O desafio deixa de ser ser escolhida e passa a ser manter esse padrão.", tier:"preparado"},
+];
+
+const PLAN = [
+  "Corrigir o principal problema de posicionamento — revisar e escrever a frase de posicionamento da empresa.",
+  "Corrigir a apresentação da marca — revisar identidade visual nos 3 pontos de contato mais usados.",
+  "Revisar a oferta — reescrever com foco em benefício, não em característica.",
+  "Corrigir presença digital — atualizar perfil, ficha do Google e prova social visível.",
+  "Melhorar atendimento e vendas — mapear etapas e identificar onde os clientes esfriam.",
+  "Melhorar experiência do cliente — definir um ponto de contato pós-entrega.",
+  "Definir indicadores — escolher 1 métrica para acompanhar nas próximas 4 semanas.",
+];
+
+let answers = {}; // "areaIdx-qIdx" -> value
+let lead = { name:"", email:"", phone:"" };
+let currentScreenIndex = 0;
+let screenOrder = []; // built dynamically: landing, lead, area0..area6, loading, results
+
+function $(sel){ return document.querySelector(sel); }
+function $all(sel){ return document.querySelectorAll(sel); }
+
+// ---------- BUILD AREA SCREENS ----------
+const areaScreensContainer = $("#areaScreens");
+AREAS.forEach((area, ai) => {
+  const scale = ["NUNCA","RARAMENTE","ÀS VEZES","FREQUENTE","SEMPRE"];
+  let qlistHtml = "";
+  area.perguntas.forEach((q, qi) => {
+    let pills = "";
+    for(let v=0; v<=4; v++){
+      pills += `<div class="pill" data-area="${ai}" data-q="${qi}" data-val="${v}"><span class="pv">${v}</span></div>`;
+    }
+    qlistHtml += `
+      <div class="qcard">
+        <div class="qtext"><span class="qn">${String(qi+1).padStart(2,'0')}</span>${q}</div>
+        <div class="pillrow">${pills}</div>
+      </div>`;
+  });
+
+  const div = document.createElement("div");
+  div.className = "screen";
+  div.setAttribute("data-screen", "area"+ai);
+  div.innerHTML = `
+    <div class="topbar on-light">
+      <button class="back-btn" data-back="${ai===0 ? 'lead' : 'area'+(ai-1)}">‹</button>
+      <div class="ttrack"><div class="tfill" data-fillfor="area${ai}" style="width:0%"></div></div>
+      <div class="tlabel" style="color:#999;">ÁREA ${area.num} DE 07</div>
+    </div>
+    <div class="scr-inner">
+      <div class="q-body">
+        <div class="area-head">
+          <div class="idx">${area.num}</div>
+          <div class="names"><div class="eyebrow2">Área de diagnóstico</div><h3>${area.nome}</h3></div>
+        </div>
+        <div class="area-intro">${area.intro}</div>
+        <div class="scale-legend">
+          <div class="sc">0<br>NUNCA</div><div class="sc">1<br>RARAM.</div><div class="sc">2<br>ÀS VEZES</div><div class="sc">3<br>FREQ.</div><div class="sc">4<br>SEMPRE</div>
+        </div>
+        <div class="qlist">${qlistHtml}</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="btn-zone">
+        <button class="btn-primary" data-nextarea="${ai}" disabled>CONTINUAR</button>
+        <div class="btn-note" data-notefor="${ai}">Faltam 5 respostas nesta área</div>
+      </div>
+    </div>
+  `;
+  areaScreensContainer.appendChild(div);
+});
+
+// ---------- SCREEN NAVIGATION ----------
+function showScreen(name){
+  $all(".screen").forEach(s => s.classList.remove("active"));
+  const target = document.querySelector(`.screen[data-screen="${name}"]`);
+  if(target){ target.classList.add("active"); target.scrollTop = 0; }
+  window.scrollTo(0,0);
+}
+
+$all("[data-back]").forEach(btn=>{
+  btn.addEventListener("click", ()=> showScreen(btn.getAttribute("data-back")));
+});
+
+$("#btnStart").addEventListener("click", ()=> showScreen("lead"));
+
+// ---------- LEAD FORM VALIDATION ----------
+function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+function validPhone(v){ return v.replace(/\D/g,"").length >= 10; }
+
+$("#btnLeadNext").addEventListener("click", ()=>{
+  const name = $("#leadName").value.trim();
+  const email = $("#leadEmail").value.trim();
+  const phone = $("#leadPhone").value.trim();
+  let ok = true;
+  if(name.length < 2){ $("#err-leadName").style.display="block"; ok=false; } else { $("#err-leadName").style.display="none"; }
+  if(!validEmail(email)){ $("#err-leadEmail").style.display="block"; ok=false; } else { $("#err-leadEmail").style.display="none"; }
+  if(!validPhone(phone)){ $("#err-leadPhone").style.display="block"; ok=false; } else { $("#err-leadPhone").style.display="none"; }
+  if(!ok) return;
+  lead = { name, email, phone };
+  showScreen("area0");
+});
+
+// ---------- PILL SELECTION ----------
+areaScreensContainer.addEventListener("click", (e)=>{
+  const pill = e.target.closest(".pill");
+  if(!pill) return;
+  const ai = pill.getAttribute("data-area");
+  const qi = pill.getAttribute("data-q");
+  const val = pill.getAttribute("data-val");
+  const key = ai+"-"+qi;
+  answers[key] = parseInt(val,10);
+
+  // update UI within this qcard
+  const qcard = pill.closest(".qcard");
+  qcard.querySelectorAll(".pill").forEach(p=>p.classList.remove("selected"));
+  pill.classList.add("selected");
+
+  updateAreaProgress(parseInt(ai,10));
+});
+
+function updateAreaProgress(ai){
+  const area = AREAS[ai];
+  let answered = 0;
+  area.perguntas.forEach((_,qi)=>{ if(answers[ai+"-"+qi] !== undefined) answered++; });
+  const total = area.perguntas.length;
+  const pct = Math.round((answered/total)*100);
+  const fill = document.querySelector(`[data-fillfor="area${ai}"]`);
+  if(fill) fill.style.width = pct+"%";
+  const btn = document.querySelector(`[data-nextarea="${ai}"]`);
+  const note = document.querySelector(`[data-notefor="${ai}"]`);
+  if(answered === total){
+    btn.disabled = false;
+    note.textContent = "Todas as perguntas desta área foram respondidas";
+  } else {
+    btn.disabled = true;
+    note.textContent = `Faltam ${total-answered} resposta${total-answered>1?'s':''} nesta área`;
+  }
+}
+
+$all("[data-nextarea]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const ai = parseInt(btn.getAttribute("data-nextarea"),10);
+    if(ai < AREAS.length-1){
+      showScreen("area"+(ai+1));
+    } else {
+      runDiagnosis();
+    }
+  });
+});
+
+// ---------- SCORING ----------
+function runDiagnosis(){
+  showScreen("loading");
+  setTimeout(computeAndShowResults, 1100);
+}
+
+function computeAndShowResults(){
+  const areaScores = AREAS.map((area, ai)=>{
+    let sum = 0;
+    area.perguntas.forEach((_,qi)=> sum += (answers[ai+"-"+qi]||0));
+    return sum;
+  });
+  const total = areaScores.reduce((a,b)=>a+b,0);
+
+  // level
+  const level = LEVELS.find(l => total >= l.min && total <= l.max) || LEVELS[0];
+
+  // best / worst
+  let bestIdx = 0, worstIdx = 0;
+  areaScores.forEach((s,i)=>{
+    if(s > areaScores[bestIdx]) bestIdx = i;
+    if(s < areaScores[worstIdx]) worstIdx = i;
+  });
+
+  // ---- render gauge ----
+  const circumference = 464.96;
+  const pct = total/140;
+  const offset = circumference * (1-pct);
+  $("#gaugeCircle").style.strokeDashoffset = offset;
+  animateNumber($("#scoreTotal"), 0, total, 900);
+
+  // ---- level ----
+  $("#levelName").textContent = level.name;
+  $("#levelDesc").textContent = level.desc;
+
+  // ---- bars ----
+  const barList = $("#barList");
+  barList.innerHTML = "";
+  AREAS.forEach((area,i)=>{
+    const s = areaScores[i];
+    const pctB = Math.round((s/20)*100);
+    const weak = s <= 10 ? "weak" : "";
+    const row = document.createElement("div");
+    row.className = "barrow "+weak;
+    row.innerHTML = `<div class="bname">${area.num} · ${area.nome}</div><div class="btrack"><div class="bfill" style="width:0%" data-target="${pctB}"></div></div><div class="bval">${s}/20</div>`;
+    barList.appendChild(row);
+  });
+  setTimeout(()=>{
+    $all(".bfill").forEach(f=> f.style.width = f.getAttribute("data-target")+"%");
+  }, 150);
+
+  // ---- best / worst ----
+  $("#bestName").textContent = AREAS[bestIdx].nome;
+  $("#bestScore").textContent = areaScores[bestIdx]+" de 20 pontos";
+  $("#worstName").textContent = AREAS[worstIdx].nome;
+  $("#worstScore").textContent = areaScores[worstIdx]+" de 20 pontos";
+
+  const worstArea = AREAS[worstIdx];
+  $("#worstAlertTitle").textContent = worstArea.nome;
+  $("#worstAlertText").textContent = worstArea.alerta;
+  $("#worstActionText").textContent = worstArea.acao;
+
+  // ---- WhatsApp CTA (tiered) ----
+  const waTitle = $("#waTitle"), waText = $("#waText"), waEyebrow = $("#waEyebrow"), waBtnText = $("#waBtnText"), waLink = $("#waLink");
+  let msg = "";
+  if(level.tier === "preparado"){
+    waEyebrow.textContent = "VOCÊ ESTÁ PRONTO PARA A FASE 2";
+    waTitle.textContent = "Sua empresa já tem uma base sólida. Vamos falar sobre o próximo nível?";
+    waText.textContent = "Com "+total+" pontos, você está entre as empresas mais estruturadas que já passaram por este diagnóstico. Fale com a RD Facilities para conhecer a Fase 2 — a etapa de quem já está pronto para escalar.";
+    waBtnText.textContent = "QUERO CONHECER A FASE 2";
+    msg = `Olá! Sou ${lead.name} e acabei de fazer o Diagnóstico da Verdade (RD PRIME).\n\nMeu resultado: ${total}/140 pontos — ${level.name}.\nÁrea mais forte: ${AREAS[bestIdx].nome}\nÁrea mais fraca: ${worstArea.nome}\n\nQuero saber mais sobre a Fase 2 para dar o próximo passo.\n\nMeu e-mail: ${lead.email}`;
+  } else {
+    waEyebrow.textContent = "PRÓXIMO PASSO";
+    waTitle.textContent = "Encontramos pontos que estão custando clientes para sua empresa. Vamos corrigir isso?";
+    waText.textContent = "Com "+total+" pontos, sua maior oportunidade agora está em "+worstArea.nome.toLowerCase()+". Fale com a RD Facilities e receba orientação sobre como aplicar o plano de 7 dias no seu negócio.";
+    waBtnText.textContent = "FALAR COM A RD FACILITIES";
+    msg = `Olá! Sou ${lead.name} e acabei de fazer o Diagnóstico da Verdade (RD PRIME).\n\nMeu resultado: ${total}/140 pontos — ${level.name}.\nÁrea mais fraca: ${worstArea.nome}\nMaior alerta: ${worstArea.alerta}\n\nQuero ajuda para corrigir isso na minha empresa.\n\nMeu e-mail: ${lead.email}`;
+  }
+  waLink.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+
+  showScreen("results");
+}
+
+function animateNumber(el, from, to, duration){
+  const start = performance.now();
+  function tick(now){
+    const p = Math.min(1, (now-start)/duration);
+    const val = Math.round(from + (to-from)*p);
+    el.textContent = val;
+    if(p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+</script>
+</body>
+</html>
